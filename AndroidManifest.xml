@@ -40,11 +40,7 @@
                 <action android:name="SERVICO_EVERY"/>
             </intent-filter>
         </service>
-        <receiver  android:name="br.com.everyfeeds.receiver.ScheduleReceiver" >
-            <intent-filter>
-                <action android:name="br.com.everyfeeds.receiver.ScheduleReceiver" />
-            </intent-filter>
-        </receiver>
+        <receiver  android:name="br.com.everyfeeds.receiver.ScheduleReceiver" />
         <receiver  android:name="br.com.everyfeeds.receiver.ServiceReceiver" />
         
     </application>
