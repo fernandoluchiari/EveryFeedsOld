@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name" translatable="false">EveryFeeds</string> 
+
+    <string name="rotulo_opcao" translatable="false">Caso queira que o EveryFeeds utilize sua conta Google: </string> 
+    
+    <string name="rotulo_nao" translatable="false">Não,Obrigado!</string>
+	
+	<string name="action_settings" translatable="false">Settings</string>
+     
+    <!-- Button text -->
+    <string name="btn_logout_from_google" translatable="false">X</string>
+    <string name="btn_revoke_access" translatable="false" >Revoke Access</string>
+	
+</resources>
