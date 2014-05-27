@@ -22,8 +22,10 @@ public class ScheduleReceiver extends BroadcastReceiver {
 		final PendingIntent pending = PendingIntent.getBroadcast(context, 0, i,
 				PendingIntent.FLAG_UPDATE_CURRENT);
 		Calendar cal = Calendar.getInstance();
-		cal.add(Calendar.SECOND, 30);
+		cal.add(Calendar.MILLISECOND, 1);
 		service.setInexactRepeating(AlarmManager.RTC, cal.getTimeInMillis(),
 				REPEAT_TIME, pending);
 	}
+	
+	
 }

@@ -11,6 +11,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -70,7 +71,6 @@ public class Principal extends Activity implements OnClickListener,
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.principal);
 
-		// btnSignIn = (SignInButton) findViewById(R.id.btn_sign_in);
 		btnSignOut = (Button) findViewById(R.id.btn_sign_out);
 		imgProfilePic = (ImageView) findViewById(R.id.imgProfilePic);
 		txtName = (TextView) findViewById(R.id.txtName);
@@ -91,10 +91,9 @@ public class Principal extends Activity implements OnClickListener,
 				.addScope(Plus.SCOPE_PLUS_LOGIN).build();
 		atualizaComponentes(false);
 		((TableLayout) this.findViewById(R.id.tabelaFeedCorrente))
-				.removeAllViewsInLayout();	
-		
+				.removeAllViewsInLayout();			
 		connection = this;
-		bindService(new Intent("SERVICO_EVERY"), connection, 0); // 
+		bindService(new Intent("SERVICO_EVERY"), connection, Context.BIND_AUTO_CREATE); // 
 	}
 
 	@Override
@@ -155,7 +154,7 @@ public class Principal extends Activity implements OnClickListener,
 		startService(it);
 		
 		Intent intent = new Intent();
-		intent.setAction("br.com.everyfeeds.receiver.ScheduleReceiver");
+		intent.setAction("SCHEDULE_RECEIVER");
 		sendBroadcast(intent);
 	}
 	
@@ -281,14 +280,14 @@ public class Principal extends Activity implements OnClickListener,
 
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
+		
 		Controller controller = (Controller)service;
 		servico = controller.getServiceListener();
 	}
 
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
-		// TODO Auto-generated method stub
-		
+				
 	}
 
 	

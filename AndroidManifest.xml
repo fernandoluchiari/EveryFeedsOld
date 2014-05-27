@@ -36,12 +36,17 @@
             android:exported="false"
             android:label="MainService" >
             <intent-filter>
-                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
                 <action android:name="SERVICO_EVERY"/>
             </intent-filter>
         </service>
-        <receiver  android:name="br.com.everyfeeds.receiver.ScheduleReceiver" />
-        <receiver  android:name="br.com.everyfeeds.receiver.ServiceReceiver" />
+        <receiver  android:name="br.com.everyfeeds.receiver.ScheduleReceiver" >
+         <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+                <action android:name="SCHEDULE_RECEIVER" />
+            </intent-filter>            
+        </receiver>    
+            <receiver  android:name="br.com.everyfeeds.receiver.ServiceReceiver" />
         
     </application>
 
