@@ -86,7 +86,13 @@ public class MainService extends Service implements IService {
 		myNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		myNotificationManager.notify(1, notificacao.build());
 	}
-
+	
+	public void verificaFeeds(List<Canal>feedsAtuais ,List<Canal> feedsAntigos){
+		if (feedsAtuais.size() != 0){
+			exibeNotificacao("Existem "+ feedsAtuais.size() +"videos novos em seus feeds!");
+		}
+	}	
+	
 	@Override
 	public GoogleApiClient getGoogleApiClient() {
 		return mGoogleApiClient;
@@ -129,24 +135,6 @@ public class MainService extends Service implements IService {
 	public List<Canal> getFeedsNovos() {
 		return feedsAtuais;
 	}
-	public void organizaFeeds() {
-		Calendar dataAtual = Calendar.getInstance(Locale.ENGLISH);
-		Calendar dataInicioSemana = Calendar.getInstance(Locale.ENGLISH);
-		dataInicioSemana.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-		for (Canal dadosCanal : dadosUsuario.getCanais()) {
-			Calendar dataUltimaAtualizacao = dadosCanal
-					.getDataUltimaAtualizacao();
-			if ((dataUltimaAtualizacao.getTime().before(dataAtual.getTime()) && dataUltimaAtualizacao
-					.getTime().after(dataInicioSemana.getTime()))
-					|| (dataUltimaAtualizacao.get(Calendar.DAY_OF_YEAR) == dataAtual.get(Calendar.DAY_OF_YEAR)
-					|| dataUltimaAtualizacao.get(Calendar.DAY_OF_YEAR) ==dataInicioSemana.get(Calendar.DAY_OF_YEAR))) {
-				feedsAtuais.add(dadosCanal);				
-			} else {
-				feedsAntigos.add(dadosCanal);
-			}
-		}
-		Collections.sort(feedsAtuais);
-		Collections.sort(feedsAntigos);
-	}
+	
 	
 }

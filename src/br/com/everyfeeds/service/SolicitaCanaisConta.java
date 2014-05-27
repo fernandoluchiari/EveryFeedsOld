@@ -45,6 +45,8 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 	private List<Canal> feedsAntigos = new ArrayList<Canal>();
 	private MainService service;
 	long inicio = 0;
+	
+	private String ERRO_EVERYFEEDS = "Erro EveryFeeds";
 
 	public SolicitaCanaisConta(Token token, Usuario dadosUsuario,
 			Principal principalActivity, MainService service) {
@@ -82,6 +84,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 				gerarTabelaFeeds();
 			}else{
 				organizaFeeds();
+				service.verificaFeeds(feedsAtuais,feedsAntigos);
 			}
 		} else {
 			if(service == null){
@@ -89,7 +92,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 						.showMessage("Ocorreu um erro no seu acesso a internet,tente novamente mais tarde!");
 				principalActivity.showBarraAguarde(false);
 			}else{
-				Log.e("Sem internet","Ocorreu um erro no seu acesso a internet,tente novamente mais tarde!");
+				Log.e(ERRO_EVERYFEEDS,"Ocorreu um erro no seu acesso a internet,tente novamente mais tarde!");
 			}
 		}
 		return;
@@ -168,7 +171,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 		try {
 			subscriptionResult = subscriptionRequest.execute();
 		} catch (Exception e) {
-			Log.e("erro ao obter lista das incricoes: ",
+			Log.e(ERRO_EVERYFEEDS,
 					e.getMessage());
 		}
 		if (subscriptionResult != null) {
@@ -218,7 +221,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 		try {
 			subscriptionResult = subscriptionRequest.execute();
 		} catch (Exception e) {
-			Log.e("erro ao obter lista das incricoes: ",
+			Log.e(ERRO_EVERYFEEDS,
 					 e.getMessage());
 		}
 		if (subscriptionResult != null) {
@@ -265,7 +268,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 			InputStream in = new java.net.URL(urldisplay).openStream();
 			mIcon11 = BitmapFactory.decodeStream(in);
 		} catch (Exception e) {
-			Log.e("Error", e.getMessage());
+			Log.e(ERRO_EVERYFEEDS, e.getMessage());
 			e.printStackTrace();
 			principalActivity.showMessage(e.getMessage());
 		}

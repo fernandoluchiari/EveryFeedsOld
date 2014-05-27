@@ -6,12 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -22,9 +22,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import br.com.everyfeeds.entity.Token;
 import br.com.everyfeeds.entity.Usuario;
+import br.com.everyfeeds.receiver.ScheduleReceiver;
 import br.com.everyfeeds.service.IService;
 import br.com.everyfeeds.service.MainService;
 import br.com.everyfeeds.service.MainService.Controller;
+import br.com.everyfeeds.service.SolicitaCanaisConta;
 import br.com.everyfeeds.service.SolicitaProfile;
 import br.com.everyfeeds.service.SolicitaToken;
 
@@ -49,6 +51,7 @@ public class Principal extends Activity implements OnClickListener,
 	private boolean mIntentInProgress;
 	private SolicitaProfile threadProfile;
 	private SolicitaToken threadToken;
+	private SolicitaCanaisConta threadYoutube;
 	
 	private ServiceConnection connection;
 	private MainService servico;
@@ -140,8 +143,10 @@ public class Principal extends Activity implements OnClickListener,
 					dadosUsuario);
 			threadToken = new SolicitaToken(this, mGoogleApiClient, token,
 					scopes);
+			threadYoutube =  new SolicitaCanaisConta(token, dadosUsuario, this, null);
 			threadProfile.execute();
-			threadToken.execute();				
+			threadToken.execute();
+			threadYoutube.execute();
 		}
 	}
 	
@@ -156,6 +161,7 @@ public class Principal extends Activity implements OnClickListener,
 		Intent intent = new Intent();
 		intent.setAction("SCHEDULE_RECEIVER");
 		sendBroadcast(intent);
+		
 	}
 	
 	@Override
@@ -188,8 +194,21 @@ public class Principal extends Activity implements OnClickListener,
 	 * Sign-out from google
 	 * */
 	private void signOutFromGplus() {
-		threadProfile.cancel(true);
-		threadToken.cancel(true);
+		if (isExecutando) {
+			threadProfile.cancel(true);
+			threadToken.cancel(true);
+			threadYoutube.cancel(true);
+			
+			ComponentName receiver = new ComponentName(Principal.this, ScheduleReceiver.class);
+			PackageManager pm = this.getPackageManager();
+            pm.setComponentEnabledSetting(receiver,
+			           PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+			           PackageManager.DONT_KILL_APP);
+            
+            Intent it = new Intent("ServicoEvery");
+    		startService(it);
+			
+		}
 		if (mGoogleApiClient.isConnected()) {
 			Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
 			mGoogleApiClient.disconnect();
