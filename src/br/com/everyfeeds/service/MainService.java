@@ -87,7 +87,7 @@ public class MainService extends Service implements IService {
 		myNotificationManager.notify(1, notificacao.build());
 	}
 	
-	public void verificaFeeds(List<Canal>feedsAtuais ,List<Canal> feedsAntigos){
+	public void verificaFeeds(List<Canal>feedsAtuais ){
 		if (feedsAtuais.size() != 0){
 			exibeNotificacao("Existem "+ feedsAtuais.size() +"videos novos em seus feeds!");
 		}

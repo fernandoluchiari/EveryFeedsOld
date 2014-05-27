@@ -30,6 +30,7 @@ import br.com.everyfeeds.entity.Usuario;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.DateTime;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.ActivityListResponse;
 import com.google.api.services.youtube.model.Subscription;
@@ -83,8 +84,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 				organizaFeeds();
 				gerarTabelaFeeds();
 			}else{
-				organizaFeeds();
-				service.verificaFeeds(feedsAtuais,feedsAntigos);
+				service.verificaFeeds(feedsAtuais);
 			}
 		} else {
 			if(service == null){
@@ -206,7 +206,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 
 	private void solicitaInformacaoYouTubeBasic() throws IOException,
 			ParseException {
-		List<Canal> listaCanais = new ArrayList<Canal>();
+	List<Canal> listaCanais = new ArrayList<Canal>();
 		GoogleCredential credential = new GoogleCredential()
 				.setAccessToken(token.getToken());
 		youTube = new YouTube.Builder(new NetHttpTransport(),
@@ -234,6 +234,14 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 						.list("snippet");
 				activityRequest.setChannelId(subscription.getSnippet()
 						.getResourceId().getChannelId());
+				
+				Calendar dataInicioSemana = Calendar.getInstance(Locale.ENGLISH);
+				dataInicioSemana.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+				sdf.format(dataInicioSemana);				
+				DateTime data = new DateTime(sdf.getCalendar().getTime());
+				activityRequest.setPublishedAfter(data);
+				
 				ActivityListResponse activityResponse = activityRequest
 						.execute();
 				Calendar dataUltimaAtividade = converteData(activityResponse

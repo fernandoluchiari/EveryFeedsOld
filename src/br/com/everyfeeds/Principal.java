@@ -144,8 +144,8 @@ public class Principal extends Activity implements OnClickListener,
 			threadToken = new SolicitaToken(this, mGoogleApiClient, token,
 					scopes);
 			threadYoutube =  new SolicitaCanaisConta(token, dadosUsuario, this, null);
-			threadProfile.execute();
 			threadToken.execute();
+			threadProfile.execute();
 			threadYoutube.execute();
 		}
 	}
@@ -206,7 +206,7 @@ public class Principal extends Activity implements OnClickListener,
 			           PackageManager.DONT_KILL_APP);
             
             Intent it = new Intent("ServicoEvery");
-    		startService(it);
+    		stopService(it);
 			
 		}
 		if (mGoogleApiClient.isConnected()) {
