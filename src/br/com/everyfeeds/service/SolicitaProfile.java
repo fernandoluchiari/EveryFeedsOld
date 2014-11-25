@@ -52,9 +52,9 @@ public class SolicitaProfile extends AsyncTask<Void, Void, Void> {
     
     @Override
     protected void onPostExecute(Void result) {
-    	// TODO Auto-generated method stub
     	super.onPostExecute(result);
     	 principalActivity.AtualizaDadosLogin("Olá "+dadosUsuario.getNome(), dadosUsuario.getEmail(), dadosUsuario.getImagemProfile());
+    	 principalActivity.showBarraAguarde(true);
     }
     
     /**

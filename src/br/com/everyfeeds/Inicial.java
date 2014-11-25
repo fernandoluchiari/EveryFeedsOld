@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Toast;
+import br.com.everyfeeds.R.string;
 
 import com.google.android.gms.common.SignInButton;
 
@@ -45,7 +46,7 @@ public class Inicial extends Activity implements OnClickListener {
 		} else {
 			Toast.makeText(
 					getApplicationContext(),
-					"Verifique sua conexão com a internet e tente novamente mais tarde!",
+					this.getString(string.msg_sem_conexao),
 					Toast.LENGTH_SHORT).show();
 		}
 	}

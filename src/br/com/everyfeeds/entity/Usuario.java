@@ -11,8 +11,8 @@ public class Usuario implements Serializable{
 	private String email;
 	private String profilePlus;
 	private Bitmap imagemProfile;
-	private List<Canal> canais;
-	
+	private List<Canal> canaisSemana;
+	private List<Canal> canaisOutros;
 	
 	public Usuario(){}
 		
@@ -21,7 +21,9 @@ public class Usuario implements Serializable{
 		this.email = email;
 		this.profilePlus = profilePlus;
 		this.imagemProfile = imagemProfile;
-		canais = new ArrayList<Canal>();
+		canaisSemana = new ArrayList<Canal>();
+		canaisOutros = new ArrayList<Canal>();
+		
 	}
 	public String getNome() {
 		return nome;
@@ -50,13 +52,22 @@ public class Usuario implements Serializable{
 		this.imagemProfile = imagemProfile;
 	}
 
-	public List<Canal> getCanais() {
-		return canais;
+	public List<Canal> getCanaisSemana() {
+		return canaisSemana;
 	}
 
-	public void setCanais(List<Canal> canais) {
-		this.canais = canais;
+	public void setCanaisSemana(List<Canal> canaisSemana) {
+		this.canaisSemana = canaisSemana;
 	}
+
+	public List<Canal> getCanaisOutros() {
+		return canaisOutros;
+	}
+
+	public void setCanaisOutros(List<Canal> canaisOutros) {
+		this.canaisOutros = canaisOutros;
+	}
+
 	
 	
 	

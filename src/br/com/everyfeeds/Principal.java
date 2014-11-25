@@ -1,17 +1,19 @@
 package br.com.everyfeeds;
 
+import java.util.Calendar;
+
 import android.app.Activity;
-import android.content.ComponentName;
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
-import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -20,12 +22,11 @@ import android.widget.ProgressBar;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import br.com.everyfeeds.R.string;
 import br.com.everyfeeds.entity.Token;
 import br.com.everyfeeds.entity.Usuario;
-import br.com.everyfeeds.receiver.ScheduleReceiver;
-import br.com.everyfeeds.service.IService;
+import br.com.everyfeeds.receiver.ServiceReceiver;
 import br.com.everyfeeds.service.MainService;
-import br.com.everyfeeds.service.MainService.Controller;
 import br.com.everyfeeds.service.SolicitaCanaisConta;
 import br.com.everyfeeds.service.SolicitaProfile;
 import br.com.everyfeeds.service.SolicitaToken;
@@ -39,7 +40,7 @@ import com.google.android.gms.plus.Plus;
 import com.google.api.services.youtube.YouTubeScopes;
 
 public class Principal extends Activity implements OnClickListener,
-		ConnectionCallbacks, OnConnectionFailedListener, ServiceConnection {
+		ConnectionCallbacks, OnConnectionFailedListener {
 
 	private static final int RC_SIGN_IN = 0;
 
@@ -52,10 +53,7 @@ public class Principal extends Activity implements OnClickListener,
 	private SolicitaProfile threadProfile;
 	private SolicitaToken threadToken;
 	private SolicitaCanaisConta threadYoutube;
-	
-	private ServiceConnection connection;
-	private MainService servico;
-	
+
 	private boolean isExecutando = false;
 
 	private ConnectionResult mConnectionResult;
@@ -90,22 +88,24 @@ public class Principal extends Activity implements OnClickListener,
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
 				.addConnectionCallbacks(this)
-				.addOnConnectionFailedListener(this).addApi(Plus.API, null)
+				.addOnConnectionFailedListener(this).addApi(Plus.API, new Plus.PlusOptions.Builder().build())
 				.addScope(Plus.SCOPE_PLUS_LOGIN).build();
 		atualizaComponentes(false);
 		((TableLayout) this.findViewById(R.id.tabelaFeedCorrente))
-				.removeAllViewsInLayout();			
-		connection = this;
-		bindService(new Intent("SERVICO_EVERY"), connection, Context.BIND_AUTO_CREATE); // 
+				.removeAllViewsInLayout();
+
+		iniciaAlarm(true);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
 		if (isDispositivoOnline()) {
-			mGoogleApiClient.connect();
+			if (!mGoogleApiClient.isConnected()) {
+				mGoogleApiClient.connect();
+			}
 		} else {
-			showMessage("Verifique sua conexão com a internet e tente novamente mais tarde!");
+			showMessage(this.getString(string.msg_sem_conexao));
 			Intent intent = new Intent(this, Inicial.class);
 			startActivity(intent);
 		}
@@ -128,7 +128,7 @@ public class Principal extends Activity implements OnClickListener,
 			mConnectionResult = result;
 			resolveSignInError();
 		} else if (isDispositivoOnline()) {
-			showMessage("Verifique sua conexão com a internet e tente novamente mais tarde!");
+			showMessage(this.getString(string.msg_sem_conexao));
 			Intent intent = new Intent(this, Inicial.class);
 			startActivity(intent);
 		}
@@ -139,29 +139,38 @@ public class Principal extends Activity implements OnClickListener,
 	public void onConnected(Bundle connectionHint) {
 		if (!isExecutando) {
 			isExecutando = true;
+			threadToken = new SolicitaToken(this, mGoogleApiClient, token,
+					scopes, null);
 			threadProfile = new SolicitaProfile(this, mGoogleApiClient,
 					dadosUsuario);
-			threadToken = new SolicitaToken(this, mGoogleApiClient, token,
-					scopes);
-			threadYoutube =  new SolicitaCanaisConta(token, dadosUsuario, this, null);
+			threadYoutube = new SolicitaCanaisConta(token, dadosUsuario, this,
+					null, null);
 			threadToken.execute();
 			threadProfile.execute();
 			threadYoutube.execute();
+			iniciaServico(true);
+		}
+	}
+
+	public void iniciaServico(boolean ativar) {
+		Intent it = new Intent("SERVICO_EVERY");
+		if (ativar) {
+			if(!isMyServiceRunning(MainService.class)){
+				startService(it);
+			}
+		} else {
+			stopService(it);
 		}
 	}
 	
-	public void iniciaServico(){
-		Intent it = new Intent("ServicoEvery");
-		IService c = (IService) servico;
-		c.setGoogleApiClient(mGoogleApiClient);
-		c.setUsuario(dadosUsuario);
-		c.setToken(token);
-		startService(it);
-		
-		Intent intent = new Intent();
-		intent.setAction("SCHEDULE_RECEIVER");
-		sendBroadcast(intent);
-		
+	private boolean isMyServiceRunning(Class<?> serviceClass) {
+	    ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (serviceClass.getName().equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
 	}
 	
 	@Override
@@ -196,18 +205,10 @@ public class Principal extends Activity implements OnClickListener,
 	private void signOutFromGplus() {
 		if (isExecutando) {
 			threadProfile.cancel(true);
-			threadToken.cancel(true);
 			threadYoutube.cancel(true);
-			
-			ComponentName receiver = new ComponentName(Principal.this, ScheduleReceiver.class);
-			PackageManager pm = this.getPackageManager();
-            pm.setComponentEnabledSetting(receiver,
-			           PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-			           PackageManager.DONT_KILL_APP);
-            
-            Intent it = new Intent("ServicoEvery");
-    		stopService(it);
-			
+			threadToken.cancel(true);
+			iniciaAlarm(false);
+			iniciaServico(false);
 		}
 		if (mGoogleApiClient.isConnected()) {
 			Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
@@ -216,6 +217,28 @@ public class Principal extends Activity implements OnClickListener,
 		}
 		Intent intent = new Intent(this, Inicial.class);
 		startActivity(intent);
+	}
+
+	private void iniciaAlarm(boolean ativar) {
+		if (ativar) {
+			int intervaloAlarme = 1000 * 60 * 4;
+			AlarmManager service = (AlarmManager) this
+					.getSystemService(Context.ALARM_SERVICE);
+			Intent i = new Intent(this, ServiceReceiver.class);
+			final PendingIntent pending = PendingIntent.getBroadcast(this, 0,
+					i, PendingIntent.FLAG_UPDATE_CURRENT);
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.MINUTE, 4);
+			service.setInexactRepeating(AlarmManager.RTC,
+					cal.getTimeInMillis(), intervaloAlarme, pending);
+		} else {
+			Intent intent = new Intent(this, ServiceReceiver.class);
+			PendingIntent sender = PendingIntent.getBroadcast(this, 0, intent,
+					0);
+			AlarmManager alarmManager = (AlarmManager) this
+					.getSystemService(Context.ALARM_SERVICE);
+			alarmManager.cancel(sender);
+		}
 	}
 
 	/**
@@ -288,6 +311,11 @@ public class Principal extends Activity implements OnClickListener,
 		}
 		return false;
 	}
+	
+	@Override
+	public void onBackPressed() {
+		
+	}
 
 	public ImageView getImgProfilePic() {
 		return imgProfilePic;
@@ -297,17 +325,8 @@ public class Principal extends Activity implements OnClickListener,
 		return txtName;
 	}
 
-	@Override
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		
-		Controller controller = (Controller)service;
-		servico = controller.getServiceListener();
+	public GoogleApiClient getmGoogleApiClient() {
+		return mGoogleApiClient;
 	}
 
-	@Override
-	public void onServiceDisconnected(ComponentName name) {
-				
-	}
-
-	
 }

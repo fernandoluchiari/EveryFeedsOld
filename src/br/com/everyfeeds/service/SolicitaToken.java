@@ -2,8 +2,10 @@ package br.com.everyfeeds.service;
 
 import java.io.IOException;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import br.com.everyfeeds.Principal;
 import br.com.everyfeeds.entity.Token;
 
@@ -20,36 +22,61 @@ public class SolicitaToken extends AsyncTask<Void, Void, Void> {
 	public GoogleApiClient mGoogleApiClient;
 	public Token token;
 	public String scopes;
+	public Context context;
+	public String ERRO_EVERYFEEDS = "Erro EveryFeeds";
 
 	public SolicitaToken(Principal principalActivity,
-			GoogleApiClient mGoogleApiClient, Token token, String scopes) {
+			GoogleApiClient mGoogleApiClient, Token token, String scopes,
+			Context context) {
 		this.principalActivity = principalActivity;
 		this.mGoogleApiClient = mGoogleApiClient;
 		this.token = token;
 		this.scopes = scopes;
+		this.context = context;
 	}
 
 	public void requisitaToken() {
 		Bundle appActivities = new Bundle();
-	
+
 		String code = null;
 		try {
-			code = GoogleAuthUtil.getToken(principalActivity, // Context context
-					Plus.AccountApi.getAccountName(mGoogleApiClient),scopes);
+			if (principalActivity != null) {
+				code = GoogleAuthUtil.getToken(
+						principalActivity, // Context context
+						Plus.AccountApi.getAccountName(mGoogleApiClient),
+						scopes);
+			} else {
+				code = GoogleAuthUtil.getToken(
+						context, // Context context
+						Plus.AccountApi.getAccountName(mGoogleApiClient),
+						scopes);
+			}
 			// definindo o valor do token
 			token.setToken(code);
 		} catch (IOException transientEx) {
 			return;
 		} catch (UserRecoverableAuthException e) {
 			// and the second call to GoogleAuthUtil.getToken will succeed.
-			principalActivity.startActivityForResult(e.getIntent(),
-					AUTH_CODE_REQUEST_CODE);
+			if (principalActivity != null) {
+				principalActivity.startActivityForResult(e.getIntent(),
+						AUTH_CODE_REQUEST_CODE);
+			} else {
+				Log.e(ERRO_EVERYFEEDS, e.getMessage());
+			}
 			return;
 		} catch (GoogleAuthException authEx) {
-			principalActivity.showMessage(authEx.getMessage());
+			if (principalActivity != null) {
+				principalActivity.showMessage(authEx.getMessage());
+			} else {
+				Log.e(ERRO_EVERYFEEDS, authEx.getMessage());
+			}
 			return;
 		} catch (Exception e) {
-			principalActivity.showMessage(e.getMessage());
+			if (principalActivity != null) {
+				principalActivity.showMessage(e.getMessage());
+			} else {
+				Log.e(ERRO_EVERYFEEDS, e.getMessage());
+			}
 			throw new RuntimeException(e);
 		}
 	}
@@ -58,12 +85,15 @@ public class SolicitaToken extends AsyncTask<Void, Void, Void> {
 	protected Void doInBackground(Void... params) {
 		try {
 			requisitaToken();
-			principalActivity.iniciaServico();
+
 		} catch (Exception e) {
-			principalActivity.showMessage(e.getMessage());
+			if (principalActivity != null) {
+				principalActivity.showMessage(e.getMessage());
+			} else {
+				Log.e(ERRO_EVERYFEEDS, e.getMessage());
+			}
 		}
 
 		return null;
 	}
-
 }

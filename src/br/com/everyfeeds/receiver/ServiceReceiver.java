@@ -9,7 +9,6 @@ public class ServiceReceiver extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent arg1) {
-		System.out.println("iniciou o receiver..!!!");
 		 Intent service = new Intent(context, MainService.class);
 		    context.startService(service);
 	}

@@ -2,52 +2,52 @@
     package="br.com.everyfeeds"
     android:versionCode="1"
     android:versionName="1.0" >
-    
-    <uses-permission android:name="android.permission.INTERNET"/>
+
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    
 
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="19" />
 
-    <application         
+    <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
-        
-        <meta-data android:name="com.google.android.gms.version" 
-            android:value="@integer/google_play_services_version" />       
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity
             android:name="br.com.everyfeeds.Inicial"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="br.com.everyfeeds.Principal"></activity>
-        
-        
-        <service android:name="br.com.everyfeeds.service.MainService"
-            android:icon="@drawable/ic_launcher"
+        <activity android:name="br.com.everyfeeds.Principal" >
+        </activity>
+
+        <service
+            android:name="br.com.everyfeeds.service.MainService"
             android:exported="false"
+            android:icon="@drawable/ic_launcher"
             android:label="MainService" >
             <intent-filter>
-                <category android:name="android.intent.category.LAUNCHER"/>
-                <action android:name="SERVICO_EVERY"/>
+                <category android:name="android.intent.category.LAUNCHER" />
+
+                <action android:name="SERVICO_EVERY" />
             </intent-filter>
         </service>
-        <receiver  android:name="br.com.everyfeeds.receiver.ScheduleReceiver" >
-         <intent-filter>
-                <category android:name="android.intent.category.DEFAULT" />
-                <action android:name="SCHEDULE_RECEIVER" />
-            </intent-filter>            
-        </receiver>    
-            <receiver  android:name="br.com.everyfeeds.receiver.ServiceReceiver" />
-        
+
+        <receiver android:name="br.com.everyfeeds.receiver.ServiceReceiver" />
     </application>
 
 </manifest>
