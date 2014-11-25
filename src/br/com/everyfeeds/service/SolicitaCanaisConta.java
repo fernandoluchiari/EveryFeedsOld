@@ -100,7 +100,8 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 				}
 				dadosUsuario.setCanaisSemana(feedsAtuais);
 				dadosUsuario.setCanaisOutros(feedsAntigos);
-				gerarTabelaFeeds();
+				gerarTabelaFeeds(true);
+				gerarTabelaFeeds(false);
 			} else {
 				if(feedsAtuais.size()!= 0){
 					Collections.sort(feedsAtuais);
@@ -111,14 +112,13 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 			if (service == null) {
 				principalActivity.showBarraAguarde(false);
 			}
-			Log.e(ERRO_EVERYFEEDS,
-					principalActivity.getString(string.msg_erro_conexao));
+			
 		}
 		return;
 
 	}
 
-	private void gerarTabelaFeeds() {
+	private void gerarTabelaFeeds(boolean atuais) {
 		TableLayout tabelaFeedsPrincipal = (TableLayout) principalActivity
 				.findViewById(R.id.tabelaFeedCorrente);
 
@@ -129,68 +129,52 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 			principalActivity
 					.showMessage(principalActivity.getString(string.msg_sem_feed));
 		} else {
-			for (Canal dadosCanais : feedsAtuais) {
-				TableRow linhaTabela = new TableRow(principalActivity);
-				linhaTabela.setPadding(0, 0, 0, 5);
-				linhaTabela.setGravity(Gravity.CENTER);
-				final ImageView imagemFeed = new ImageView(principalActivity);
-				imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
-				final String idChannel = dadosCanais.getId();
-				imagemFeed.setOnClickListener(new OnClickListener() {
-				    @Override
-					public void onClick(View v) {
-				    	Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + idChannel));
-				    	principalActivity.startActivity(intent);
-					}
-				});	
-				
-				/**imagemFeed.setOnTouchListener(new OnTouchListener() {
-
-			        @Override
-			        public boolean onTouch(View v, MotionEvent event) {
-			            switch(event.getAction()){
-			            case MotionEvent.ACTION_DOWN:
-			                                     imagemFeed.setVisibility(75);
-			                break;
-			            case MotionEvent.ACTION_UP:
-			                                     imagemFeed.setVisibility(100);
-			                break;
-			            }
-			            return true;
-			        }
-
-					
-			    });**/
-				
-				linhaTabela.addView(imagemFeed);
-
-				TextView descricaoFeed = new TextView(principalActivity);
-				descricaoFeed.setPadding(5, 0, 0, 0);
-				descricaoFeed.setText(dadosCanais.getTitulo());
-
-				linhaTabela.addView(descricaoFeed);
-				tabelaFeedsPrincipal.addView(linhaTabela);
-			}
-			int indice = 0;
-			TableRow linhaTabela = null;
-			for (Canal dadosCanais : feedsAntigos) {
-
-				if (indice % 2 == 0) {
-					linhaTabela = new TableRow(principalActivity);
+			if(atuais){
+				for (Canal dadosCanais : feedsAtuais) {
+					TableRow linhaTabela = new TableRow(principalActivity);
 					linhaTabela.setPadding(0, 0, 0, 5);
 					linhaTabela.setGravity(Gravity.CENTER);
+					final ImageView imagemFeed = new ImageView(principalActivity);
+					imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
+					final String idChannel = dadosCanais.getId();
+					imagemFeed.setOnClickListener(new OnClickListener() {
+					    @Override
+						public void onClick(View v) {
+					    	Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + idChannel));
+					    	principalActivity.startActivity(intent);
+						}
+					});				
+					
+					linhaTabela.addView(imagemFeed);
+	
+					TextView descricaoFeed = new TextView(principalActivity);
+					descricaoFeed.setPadding(5, 0, 0, 0);
+					descricaoFeed.setText(dadosCanais.getTitulo());
+	
+					linhaTabela.addView(descricaoFeed);
+					tabelaFeedsPrincipal.addView(linhaTabela);
 				}
-				ImageView imagemFeed = new ImageView(principalActivity);
-				imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
-				imagemFeed.setPadding(0, 0, 5, 0);
-				linhaTabela.addView(imagemFeed);
-
-				if ((indice == feedsAntigos.size() - 1) || indice % 2 != 0) {
-					tabelaOutrosFeeds.addView(linhaTabela);
+			}else{
+				int indice = 0;
+				TableRow linhaTabela = null;
+				for (Canal dadosCanais : feedsAntigos) {
+	
+					if (indice % 2 == 0) {
+						linhaTabela = new TableRow(principalActivity);
+						linhaTabela.setPadding(0, 0, 0, 5);
+						linhaTabela.setGravity(Gravity.CENTER);
+					}
+					ImageView imagemFeed = new ImageView(principalActivity);
+					imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
+					imagemFeed.setPadding(0, 0, 5, 0);
+					linhaTabela.addView(imagemFeed);
+	
+					if ((indice == feedsAntigos.size() - 1) || indice % 2 != 0) {
+						tabelaOutrosFeeds.addView(linhaTabela);
+					}
+					indice++;
 				}
-				indice++;
 			}
-
 			principalActivity.atualizaComponentes(true);
 		}
 		principalActivity.showBarraAguarde(false);
