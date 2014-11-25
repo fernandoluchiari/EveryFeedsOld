@@ -117,6 +117,7 @@ public class Principal extends Activity implements OnClickListener,
 			mGoogleApiClient.disconnect();
 		}
 	}
+	
 
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {

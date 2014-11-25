@@ -88,5 +88,13 @@ public class Canal implements Comparable<Canal>,Serializable {
 		return getDataUltimaAtualizacao().compareTo(
 				dadosCanal.getDataUltimaAtualizacao());
 	}
+	@Override
+	public boolean equals(Object o) {
+		if((o instanceof Canal) && (((Canal)o).getId().equals(this.getId())) ){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 }

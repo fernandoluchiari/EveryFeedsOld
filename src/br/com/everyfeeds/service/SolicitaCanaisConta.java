@@ -269,7 +269,9 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 					if(feedsSemana){
 						feedsAtuais.add(dadosCanais);
 					}else{
-						feedsAntigos.add(dadosCanais);
+						if(!isDuplicidade(dadosCanais)){
+							feedsAntigos.add(dadosCanais);
+						}
 					}
 				}
 			}
@@ -295,7 +297,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 				ActivityListResponse activityResponse = activityRequest
 						.execute();
 				if (activityResponse.getItems().size() != 0) {
-					// só irão ser adicionados feeds que foram atualizados no
+					// só serão adicionados feeds que foram atualizados no
 					// inicio da semana
 					Calendar dataUltimaAtividade = converteData(activityResponse
 							.getItems().get(0).getSnippet().getPublishedAt()
@@ -353,6 +355,13 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 		return mIcon11;
 	}
 
-	
+	private boolean isDuplicidade(Canal dadosCanal){
+		for(Canal dadosCanalAtual:feedsAtuais){
+			if(dadosCanalAtual.equals(dadosCanal)){
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

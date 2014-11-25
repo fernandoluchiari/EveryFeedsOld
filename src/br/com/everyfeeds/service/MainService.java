@@ -5,13 +5,14 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -55,7 +56,7 @@ public class MainService extends Service implements
 
 	@Override
 	public void onCreate() {
-		Log.i("Every", "Servico criado...");
+		Log.i("EveryFeeds-Service", "Servico criado...");
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
 				.addConnectionCallbacks(this)
@@ -72,8 +73,8 @@ public class MainService extends Service implements
 			mGoogleApiClient.connect();
 		}
 		if (!cancelada) {
-			Log.i("Every", "Servico iniciado..");
-			Log.i("Every", "Iniciando requisicao de dados...");
+			Log.i("EveryFeeds-Service", "Servico iniciado..");
+			Log.i("EveryFeeds-Service", "Iniciando requisicao de dados...");
 			executaTarefas();
 		}
 		return (super.onStartCommand(intent, flags, startId));
@@ -91,7 +92,7 @@ public class MainService extends Service implements
 
 	@Override
 	public void onDestroy() {
-		Log.i("Every", "service canceladoo");
+		Log.i("EveryFeeds-Service", "service canceladoo");
 		cancelada = true;
 		if (mGoogleApiClient.isConnected()) {
 			Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
@@ -119,19 +120,29 @@ public class MainService extends Service implements
 	}
 
 	public void verificaFeeds(List<Canal> feedsAtuais) {
-		if (feedsAtuais.size() != 0) {
-			if(feedsAtuais.size() == 1){
-				exibeNotificacao("Existe " + feedsAtuais.size()
-						+ " vídeo novo em seus feeds!");
-			}else{
-				exibeNotificacao("Existem " + feedsAtuais.size()
-						+ " vídeos novos em seus feeds!");
+		if(!isForeground("br.com.everyfeeds")){
+			if (feedsAtuais.size() != 0) {
+				if(feedsAtuais.size() == 1){
+					exibeNotificacao("Existe " + feedsAtuais.size()
+							+ " vídeo novo em seus feeds!");
+				}else{
+					exibeNotificacao("Existem " + feedsAtuais.size()
+							+ " vídeos novos em seus feeds!");
+				}
 			}
 		}
 	}
 
 	
+	public boolean isForeground(String myPackage){
+		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		 List< ActivityManager.RunningTaskInfo > runningTaskInfo = manager.getRunningTasks(1); 
 
+		     ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
+		   if(componentInfo.getPackageName().equals(myPackage)) return true;
+		return false;
+		}
+	
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
 		mGoogleApiClient.connect();
@@ -139,13 +150,13 @@ public class MainService extends Service implements
 
 	@Override
 	public void onConnected(Bundle connectionHint) {
-		Log.i("Every", "conectou ao serviço google");
+		Log.i("EveryFeeds-Service", "conectou ao serviço google");
 
 	}
 
 	@Override
 	public void onConnectionSuspended(int cause) {
-		Log.i("Every", "suspendeu o serviço google");
+		Log.i("EveryFeeds-Service", "suspendeu o serviço google");
 
 	}
 
