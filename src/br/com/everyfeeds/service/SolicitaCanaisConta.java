@@ -1,7 +1,6 @@
 package br.com.everyfeeds.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,27 +11,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 import br.com.everyfeeds.Principal;
-import br.com.everyfeeds.R;
-import br.com.everyfeeds.R.string;
 import br.com.everyfeeds.entity.Canal;
 import br.com.everyfeeds.entity.Token;
 import br.com.everyfeeds.entity.Usuario;
 
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -55,7 +40,6 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 	private MainService service;
 	private Calendar dataUltimaConsulta;
 	private String scopes = "oauth2:" + YouTubeScopes.YOUTUBE;
-	long inicio = 0;
 
 	private String ERRO_EVERYFEEDS = "Erro EveryFeeds";
 
@@ -71,14 +55,14 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 
 	@Override
 	protected Void doInBackground(Void... params) {
-		
+		Calendar dataHoje = Calendar.getInstance();
 		try {
-			solicitaSubscriptions();
 			if (service == null) {
-				inicio = System.currentTimeMillis();
+				solicitaSubscriptions();
 				solicitaInformacaoYouTubeFull(true);
 				solicitaInformacaoYouTubeFull(false);
 			} else {
+					solicitaSubscriptions();
 				solicitaInformacaoYouTubeBasic();
 			}
 		} catch (Exception e) {
@@ -100,89 +84,19 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 				}
 				dadosUsuario.setCanaisSemana(feedsAtuais);
 				dadosUsuario.setCanaisOutros(feedsAntigos);
-				gerarTabelaFeeds(true);
-				gerarTabelaFeeds(false);
+				
 			} else {
 				if(feedsAtuais.size()!= 0){
 					Collections.sort(feedsAtuais);
 				}
 				service.verificaFeeds(feedsAtuais);
 			}
-		} else {
-			if (service == null) {
-				principalActivity.showBarraAguarde(false);
-			}
-			
-		}
+		} 
 		return;
 
 	}
 
-	private void gerarTabelaFeeds(boolean atuais) {
-		TableLayout tabelaFeedsPrincipal = (TableLayout) principalActivity
-				.findViewById(R.id.tabelaFeedCorrente);
-
-		TableLayout tabelaOutrosFeeds = (TableLayout) principalActivity
-				.findViewById(R.id.tabelaOutrosFeeds);
-
-		if (feedsAntigos.isEmpty() && feedsAtuais.isEmpty()) {
-			principalActivity
-					.showMessage(principalActivity.getString(string.msg_sem_feed));
-		} else {
-			if(atuais){
-				for (Canal dadosCanais : feedsAtuais) {
-					TableRow linhaTabela = new TableRow(principalActivity);
-					linhaTabela.setPadding(0, 0, 0, 5);
-					linhaTabela.setGravity(Gravity.CENTER);
-					final ImageView imagemFeed = new ImageView(principalActivity);
-					imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
-					final String idChannel = dadosCanais.getId();
-					imagemFeed.setOnClickListener(new OnClickListener() {
-					    @Override
-						public void onClick(View v) {
-					    	Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube://" + idChannel));
-					    	principalActivity.startActivity(intent);
-						}
-					});				
-					
-					linhaTabela.addView(imagemFeed);
 	
-					TextView descricaoFeed = new TextView(principalActivity);
-					descricaoFeed.setPadding(5, 0, 0, 0);
-					descricaoFeed.setText(dadosCanais.getTitulo());
-	
-					linhaTabela.addView(descricaoFeed);
-					tabelaFeedsPrincipal.addView(linhaTabela);
-				}
-			}else{
-				int indice = 0;
-				TableRow linhaTabela = null;
-				for (Canal dadosCanais : feedsAntigos) {
-	
-					if (indice % 2 == 0) {
-						linhaTabela = new TableRow(principalActivity);
-						linhaTabela.setPadding(0, 0, 0, 5);
-						linhaTabela.setGravity(Gravity.CENTER);
-					}
-					ImageView imagemFeed = new ImageView(principalActivity);
-					imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
-					imagemFeed.setPadding(0, 0, 5, 0);
-					linhaTabela.addView(imagemFeed);
-	
-					if ((indice == feedsAntigos.size() - 1) || indice % 2 != 0) {
-						tabelaOutrosFeeds.addView(linhaTabela);
-					}
-					indice++;
-				}
-			}
-			principalActivity.atualizaComponentes(true);
-		}
-		principalActivity.showBarraAguarde(false);
-		long mili = System.currentTimeMillis() - inicio;
-		int segundos = (int) Math.round(mili / 1000.0);
-		principalActivity.showMessage("Os feeds demoraram " + segundos
-				+ " segundos para carregar!");
-	}
 
 	private void solicitaSubscriptions() throws IOException {
 		GoogleCredential credential = new GoogleCredential()
@@ -197,6 +111,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 		YouTube.Subscriptions.List subscriptionRequest = youTube
 				.subscriptions().list("snippet");
 		subscriptionRequest.setMine(true);
+		subscriptionRequest.setMaxResults(50L);
 		
 		SubscriptionListResponse subscriptionResult = null;
 		try {
@@ -205,7 +120,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 			Log.e(ERRO_EVERYFEEDS, e.getMessage());
 		}
 		subscriptionList = subscriptionResult.getItems();
-		if (subscriptionResult.getPageInfo().getTotalResults() > 5) {
+		if (subscriptionResult.getPageInfo().getTotalResults() > 50) {
 			while (subscriptionResult.getNextPageToken() != null) {
 				subscriptionRequest = youTube.subscriptions().list("snippet");
 				subscriptionRequest.setMine(true);
@@ -248,8 +163,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 							.getDescription(), subscription.getSnippet()
 							.getThumbnails().getDefault().getUrl().toString(),
 							dataUltimaAtividade);
-					dadosCanais.setImagemCanal(getImagemFeed(dadosCanais
-							.getThumbnails()));
+					
 					if(feedsSemana){
 						feedsAtuais.add(dadosCanais);
 					}else{
@@ -325,19 +239,7 @@ public class SolicitaCanaisConta extends AsyncTask<Void, Void, Void> {
 		return calendar;
 	}
 
-	private Bitmap getImagemFeed(String url) {
-		String urldisplay = url;
-		Bitmap mIcon11 = null;
-		try {
-			InputStream in = new java.net.URL(urldisplay).openStream();
-			mIcon11 = BitmapFactory.decodeStream(in);
-		} catch (Exception e) {
-			Log.e(ERRO_EVERYFEEDS, e.getMessage());
-			e.printStackTrace();
-
-		}
-		return mIcon11;
-	}
+	
 
 	private boolean isDuplicidade(Canal dadosCanal){
 		for(Canal dadosCanalAtual:feedsAtuais){

@@ -59,5 +59,10 @@ public class Inicial extends Activity implements OnClickListener {
 		}
 		return false;
 	}
-
+	
+	@Override
+	public void onBackPressed() {
+		
+	}
+	
 }

@@ -26,6 +26,7 @@ import br.com.everyfeeds.R.string;
 import br.com.everyfeeds.entity.Token;
 import br.com.everyfeeds.entity.Usuario;
 import br.com.everyfeeds.receiver.ServiceReceiver;
+import br.com.everyfeeds.service.GeraComponentes;
 import br.com.everyfeeds.service.MainService;
 import br.com.everyfeeds.service.SolicitaCanaisConta;
 import br.com.everyfeeds.service.SolicitaProfile;
@@ -53,6 +54,7 @@ public class Principal extends Activity implements OnClickListener,
 	private SolicitaProfile threadProfile;
 	private SolicitaToken threadToken;
 	private SolicitaCanaisConta threadYoutube;
+	private GeraComponentes threadGeraComponentes;  
 
 	private boolean isExecutando = false;
 
@@ -139,6 +141,7 @@ public class Principal extends Activity implements OnClickListener,
 	@Override
 	public void onConnected(Bundle connectionHint) {
 		if (!isExecutando) {
+			showBarraAguarde(true);
 			isExecutando = true;
 			threadToken = new SolicitaToken(this, mGoogleApiClient, token,
 					scopes, null);
@@ -149,6 +152,10 @@ public class Principal extends Activity implements OnClickListener,
 			threadToken.execute();
 			threadProfile.execute();
 			threadYoutube.execute();
+			
+			
+			threadGeraComponentes = new GeraComponentes(this, dadosUsuario);
+			threadGeraComponentes.execute();
 			iniciaServico(true);
 		}
 	}
@@ -208,6 +215,7 @@ public class Principal extends Activity implements OnClickListener,
 			threadProfile.cancel(true);
 			threadYoutube.cancel(true);
 			threadToken.cancel(true);
+			threadGeraComponentes.cancel(true);
 			iniciaAlarm(false);
 			iniciaServico(false);
 		}

@@ -84,15 +84,15 @@ public class MainService extends Service implements
 		threadToken = new SolicitaToken(null, mGoogleApiClient, token, scopes,
 				getApplicationContext());
 		threadCanaisConta = new SolicitaCanaisConta(token, dadosUsuario, null,this,dataUltimaConsulta);
+		dataUltimaConsulta = Calendar.getInstance(Locale.ENGLISH);
 		threadToken.execute();
 		threadCanaisConta.execute();
-		dataUltimaConsulta = Calendar.getInstance(Locale.ENGLISH);
 
 	}
 
 	@Override
 	public void onDestroy() {
-		Log.i("EveryFeeds-Service", "service canceladoo");
+		Log.i("EveryFeeds-Service", "service cancelado");
 		cancelada = true;
 		if (mGoogleApiClient.isConnected()) {
 			Plus.AccountApi.clearDefaultAccount(mGoogleApiClient);
