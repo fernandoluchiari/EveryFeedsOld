@@ -7,6 +7,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
@@ -31,6 +32,7 @@ import br.com.everyfeeds.service.MainService;
 import br.com.everyfeeds.service.SolicitaCanaisConta;
 import br.com.everyfeeds.service.SolicitaProfile;
 import br.com.everyfeeds.service.SolicitaToken;
+import br.com.everyfeeds.service.TesteServico;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -69,6 +71,17 @@ public class Principal extends Activity implements OnClickListener,
 	private int[] imagensPerfil = { R.drawable.mario, R.drawable.boba,
 			R.drawable.clone, R.drawable.magic, R.drawable.ving,
 			R.drawable.wolv };
+	
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+	    @Override
+	    public void onReceive(Context context, Intent intent) {
+	      Bundle bundle = intent.getExtras();
+	      if (bundle != null) {
+	        dadosUsuario = bundle.getParcelable("dadosUsuario");
+	        geraTabela();
+	      }
+	    }
+	  };
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -147,19 +160,29 @@ public class Principal extends Activity implements OnClickListener,
 					scopes, null);
 			threadProfile = new SolicitaProfile(this, mGoogleApiClient,
 					dadosUsuario);
-			threadYoutube = new SolicitaCanaisConta(token, dadosUsuario, this,
+			/*threadYoutube = new SolicitaCanaisConta(token, dadosUsuario, this,
 					null, null);
+			threadYoutube.execute();*/
 			threadToken.execute();
 			threadProfile.execute();
-			threadYoutube.execute();
-			
-			
-			threadGeraComponentes = new GeraComponentes(this, dadosUsuario);
-			threadGeraComponentes.execute();
 			iniciaServico(true);
 		}
 	}
 
+	public void iniciaSolicitacoes(){
+		 Intent intent = new Intent(this, TesteServico.class);
+		    intent.putExtra("dadosUsuario",dadosUsuario);
+		    intent.putExtra("dadosToken",token);
+		    startService(intent);
+	}
+	
+	public void geraTabela(){
+		threadGeraComponentes = new GeraComponentes(this, dadosUsuario);
+		threadGeraComponentes.execute();
+	}
+	
+	
+	
 	public void iniciaServico(boolean ativar) {
 		Intent it = new Intent("SERVICO_EVERY");
 		if (ativar) {
