@@ -10,7 +10,9 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.IntentSender.SendIntentException;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -29,10 +31,9 @@ import br.com.everyfeeds.entity.Usuario;
 import br.com.everyfeeds.receiver.ServiceReceiver;
 import br.com.everyfeeds.service.GeraComponentes;
 import br.com.everyfeeds.service.MainService;
-import br.com.everyfeeds.service.SolicitaCanaisConta;
+import br.com.everyfeeds.service.SolicitaCanaisUsuario;
 import br.com.everyfeeds.service.SolicitaProfile;
 import br.com.everyfeeds.service.SolicitaToken;
-import br.com.everyfeeds.service.TesteServico;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -55,7 +56,6 @@ public class Principal extends Activity implements OnClickListener,
 	private boolean mIntentInProgress;
 	private SolicitaProfile threadProfile;
 	private SolicitaToken threadToken;
-	private SolicitaCanaisConta threadYoutube;
 	private GeraComponentes threadGeraComponentes;  
 
 	private boolean isExecutando = false;
@@ -77,7 +77,9 @@ public class Principal extends Activity implements OnClickListener,
 	    public void onReceive(Context context, Intent intent) {
 	      Bundle bundle = intent.getExtras();
 	      if (bundle != null) {
-	        dadosUsuario = bundle.getParcelable("dadosUsuario");
+	        Usuario dadosFeeds = (Usuario)intent.getSerializableExtra("dadosUsuario");
+	        dadosUsuario.setCanaisOutros(dadosFeeds.getCanaisOutros());
+	        dadosUsuario.setCanaisSemana(dadosFeeds.getCanaisSemana());
 	        geraTabela();
 	      }
 	    }
@@ -111,7 +113,13 @@ public class Principal extends Activity implements OnClickListener,
 
 		iniciaAlarm(true);
 	}
-
+	
+	@Override
+	protected void onResume() {
+		registerReceiver(receiver, new IntentFilter(SolicitaCanaisUsuario.NOTIFICATION));		
+		super.onResume();
+	}
+	
 	@Override
 	protected void onStart() {
 		super.onStart();
@@ -131,6 +139,7 @@ public class Principal extends Activity implements OnClickListener,
 		if (mGoogleApiClient.isConnected()) {
 			mGoogleApiClient.disconnect();
 		}
+		unregisterReceiver(receiver);
 	}
 	
 
@@ -157,12 +166,9 @@ public class Principal extends Activity implements OnClickListener,
 			showBarraAguarde(true);
 			isExecutando = true;
 			threadToken = new SolicitaToken(this, mGoogleApiClient, token,
-					scopes, null);
+					scopes, null,null);
 			threadProfile = new SolicitaProfile(this, mGoogleApiClient,
 					dadosUsuario);
-			/*threadYoutube = new SolicitaCanaisConta(token, dadosUsuario, this,
-					null, null);
-			threadYoutube.execute();*/
 			threadToken.execute();
 			threadProfile.execute();
 			iniciaServico(true);
@@ -170,9 +176,9 @@ public class Principal extends Activity implements OnClickListener,
 	}
 
 	public void iniciaSolicitacoes(){
-		 Intent intent = new Intent(this, TesteServico.class);
-		    intent.putExtra("dadosUsuario",dadosUsuario);
-		    intent.putExtra("dadosToken",token);
+		
+		 Intent intent = new Intent(this, SolicitaCanaisUsuario.class);
+		    intent.putExtra("token",token);
 		    startService(intent);
 	}
 	
@@ -236,9 +242,11 @@ public class Principal extends Activity implements OnClickListener,
 	private void signOutFromGplus() {
 		if (isExecutando) {
 			threadProfile.cancel(true);
-			threadYoutube.cancel(true);
+			//threadYoutube.cancel(true);
 			threadToken.cancel(true);
-			threadGeraComponentes.cancel(true);
+			if(threadGeraComponentes != null){
+				threadGeraComponentes.cancel(true);
+			}
 			iniciaAlarm(false);
 			iniciaServico(false);
 		}
@@ -342,6 +350,11 @@ public class Principal extends Activity implements OnClickListener,
 			return true;
 		}
 		return false;
+	}
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
 	}
 	
 	@Override

@@ -20,6 +20,7 @@ public class SolicitaToken extends AsyncTask<Void, Void, Void> {
 	public static int AUTH_CODE_REQUEST_CODE = 2000;
 	public Principal principalActivity;
 	public GoogleApiClient mGoogleApiClient;
+	public MainService service;
 	public Token token;
 	public String scopes;
 	public Context context;
@@ -27,12 +28,13 @@ public class SolicitaToken extends AsyncTask<Void, Void, Void> {
 
 	public SolicitaToken(Principal principalActivity,
 			GoogleApiClient mGoogleApiClient, Token token, String scopes,
-			Context context) {
+			Context context,MainService service) {
 		this.principalActivity = principalActivity;
 		this.mGoogleApiClient = mGoogleApiClient;
 		this.token = token;
 		this.scopes = scopes;
 		this.context = context;
+		this.service=service;
 	}
 
 	public void requisitaToken() {
@@ -95,5 +97,15 @@ public class SolicitaToken extends AsyncTask<Void, Void, Void> {
 		}
 
 		return null;
+	}
+	
+	@Override
+	protected void onPostExecute(Void result) {
+		super.onPostExecute(result);
+		if(principalActivity != null){
+			principalActivity.iniciaSolicitacoes();
+		}else{
+			service.executaSubscriptionsBasic();
+		}
 	}
 }

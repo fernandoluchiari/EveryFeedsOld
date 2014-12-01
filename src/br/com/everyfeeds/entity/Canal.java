@@ -7,6 +7,12 @@ import android.graphics.Bitmap;
 
 public class Canal implements Comparable<Canal>,Serializable {
 
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -731179335982522224L;
+
 	private String id;
 
 	private String titulo;
@@ -18,6 +24,7 @@ public class Canal implements Comparable<Canal>,Serializable {
 	private Bitmap imagemCanal;
 
 	private Calendar dataUltimaAtualizacao;
+	private int mData;
 
 	public Canal() {
 	}
@@ -88,13 +95,15 @@ public class Canal implements Comparable<Canal>,Serializable {
 		return getDataUltimaAtualizacao().compareTo(
 				dadosCanal.getDataUltimaAtualizacao());
 	}
+
 	@Override
 	public boolean equals(Object o) {
-		if((o instanceof Canal) && (((Canal)o).getId().equals(this.getId())) ){
+		if ((o instanceof Canal) && (((Canal) o).getId().equals(this.getId()))) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
 
+	
 }

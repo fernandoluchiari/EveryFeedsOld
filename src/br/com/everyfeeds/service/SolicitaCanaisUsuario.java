@@ -28,7 +28,7 @@ import com.google.api.services.youtube.model.ActivityListResponse;
 import com.google.api.services.youtube.model.Subscription;
 import com.google.api.services.youtube.model.SubscriptionListResponse;
 
-public class TesteServico extends IntentService{
+public class SolicitaCanaisUsuario extends IntentService{
 	
 	private static YouTube youTube;
 	private Token token;
@@ -40,21 +40,20 @@ public class TesteServico extends IntentService{
 	private Calendar dataUltimaConsulta;
 	private String scopes = "oauth2:" + YouTubeScopes.YOUTUBE;
 	
-	private String TOKEN = "token";
-	private String DADOS_USUARIO = "dadosUsuario";
-	private String SERVICE = "service";
+	private static final String TOKEN = "token";
+	private static final String DADOS_USUARIO = "dadosUsuario";
+	private static final String SERVICE = "service";
 
 	private String ERRO_EVERYFEEDS = "Erro EveryFeeds";
 	public static final String NOTIFICATION = "br.com.everyfeeds";
 	
-	public TesteServico(String name) {
-		super(name);
+	public SolicitaCanaisUsuario() {
+		super("TesteServico");
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		token = intent.getParcelableExtra(TOKEN);
-		dadosUsuario = intent.getParcelableExtra(DADOS_USUARIO);
+		token = (Token)intent.getSerializableExtra(TOKEN);
 		service = intent.getBooleanExtra(SERVICE, false);
 		try {
 			solicitaSubscriptions();
@@ -82,6 +81,7 @@ public class TesteServico extends IntentService{
 				}else if(feedsAntigos.size()!=0){
 					Collections.sort(feedsAntigos);
 				}
+				dadosUsuario = new Usuario();
 				dadosUsuario.setCanaisSemana(feedsAtuais);
 				dadosUsuario.setCanaisOutros(feedsAntigos);
 				

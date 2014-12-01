@@ -28,7 +28,7 @@ public class GeraComponentes extends AsyncTask<Void, Void, Void> {
 	private String ERRO_EVERYFEEDS = "Erro EveryFeeds";
 	
 	public GeraComponentes(Principal principalActivity, Usuario dadosUsuario) {
-		super();
+		super(); 
 		this.principalActivity = principalActivity;
 		this.dadosUsuario = dadosUsuario;
 	}
@@ -81,14 +81,14 @@ public class GeraComponentes extends AsyncTask<Void, Void, Void> {
 			final ImageView imagemFeed = new ImageView(principalActivity);
 			imagemFeed.setImageBitmap(dadosCanais.getImagemCanal());
 			final String idChannel = dadosCanais.getId();
-			imagemFeed.setOnClickListener(new OnClickListener() {
+			/*imagemFeed.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
 					Intent intent = new Intent(Intent.ACTION_VIEW, Uri
 							.parse("vnd.youtube://" + idChannel));
 					principalActivity.startActivity(intent);
 				}
-			});
+			});*/
 
 			linhaTabela.addView(imagemFeed);
 
@@ -104,7 +104,6 @@ public class GeraComponentes extends AsyncTask<Void, Void, Void> {
 
 	@Override
 	protected void onPostExecute(Void result) {
-		inicio = System.currentTimeMillis();
 		if (dadosUsuario.getCanaisOutros().isEmpty()
 				&& dadosUsuario.getCanaisSemana().isEmpty()) {
 			principalActivity.showMessage(principalActivity
@@ -114,12 +113,7 @@ public class GeraComponentes extends AsyncTask<Void, Void, Void> {
 			gerarTabelaFeedsAntigos();
 			principalActivity.atualizaComponentes(true);
 			principalActivity.showBarraAguarde(false);
-			long mili = System.currentTimeMillis() - inicio;
-			int segundos = (int) Math.round(mili / 1000.0);
-			principalActivity.showMessage("Os feeds demoraram " + segundos
-					+ " segundos para carregar!");
 		}
-
 		super.onPostExecute(result);
 	}
 	

@@ -5,41 +5,57 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Bitmap;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 public class Usuario implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2048797189632377531L;
 	private String nome;
 	private String email;
 	private String profilePlus;
 	private Bitmap imagemProfile;
 	private List<Canal> canaisSemana;
 	private List<Canal> canaisOutros;
-	
-	public Usuario(){}
-		
-	public Usuario(String nome, String email, String profilePlus,Bitmap imagemProfile) {
+	private int mData;
+
+	public Usuario() {
+	}
+
+	public Usuario(String nome, String email, String profilePlus,
+			Bitmap imagemProfile) {
 		this.nome = nome;
 		this.email = email;
 		this.profilePlus = profilePlus;
 		this.imagemProfile = imagemProfile;
 		canaisSemana = new ArrayList<Canal>();
 		canaisOutros = new ArrayList<Canal>();
-		
+
 	}
+
 	public String getNome() {
 		return nome;
 	}
+
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
+
 	public String getEmail() {
 		return email;
 	}
+
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
 	public String getProfilePlus() {
 		return profilePlus;
 	}
+
 	public void setProfilePlus(String profilePlus) {
 		this.profilePlus = profilePlus;
 	}
@@ -68,7 +84,4 @@ public class Usuario implements Serializable{
 		this.canaisOutros = canaisOutros;
 	}
 
-	
-	
-	
 }

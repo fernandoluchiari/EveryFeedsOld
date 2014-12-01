@@ -1,6 +1,5 @@
 package br.com.everyfeeds.service;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -10,9 +9,11 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
@@ -30,29 +31,34 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.plus.Plus;
 import com.google.api.services.youtube.YouTubeScopes;
 
-public class MainService extends Service implements 
-		ConnectionCallbacks, OnConnectionFailedListener {
+public class MainService extends Service implements ConnectionCallbacks,
+		OnConnectionFailedListener {
 
 	private NotificationManager myNotificationManager;
 	private GoogleApiClient mGoogleApiClient;
 	private Token token = new Token();
 	private Usuario dadosUsuario = new Usuario();
-
-	private SolicitaCanaisConta threadCanaisConta;
 	private SolicitaToken threadToken;
 	private String scopes = "oauth2:" + YouTubeScopes.YOUTUBE;
-
 	private boolean cancelada = false;
 	private Calendar dataUltimaConsulta = null;
-	private List<Canal> feedsAtuais = new ArrayList<Canal>();
-	private List<Canal> feedsAntigos = new ArrayList<Canal>();
+	private BroadcastReceiver receiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Bundle bundle = intent.getExtras();
+			if (bundle != null) {
+				Usuario dadosFeeds = (Usuario) intent
+						.getSerializableExtra("dadosUsuario");
+				dadosUsuario.setCanaisSemana(dadosFeeds.getCanaisSemana());
+				verificaFeeds(dadosUsuario.getCanaisSemana());
+			}
+		}
+	};
 
 	@Override
 	public IBinder onBind(Intent intent) {
 		return null;
 	}
-
-
 
 	@Override
 	public void onCreate() {
@@ -60,10 +66,11 @@ public class MainService extends Service implements
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
 				.addConnectionCallbacks(this)
-				.addOnConnectionFailedListener(this).addApi(Plus.API, new Plus.PlusOptions.Builder().build())
+				.addOnConnectionFailedListener(this)
+				.addApi(Plus.API, new Plus.PlusOptions.Builder().build())
 				.addScope(Plus.SCOPE_PLUS_LOGIN).build();
-		
-
+		registerReceiver(receiver, new IntentFilter(
+				SolicitaCanaisUsuario.NOTIFICATION));
 		super.onCreate();
 	}
 
@@ -82,12 +89,16 @@ public class MainService extends Service implements
 
 	private void executaTarefas() {
 		threadToken = new SolicitaToken(null, mGoogleApiClient, token, scopes,
-				getApplicationContext());
-		threadCanaisConta = new SolicitaCanaisConta(token, dadosUsuario, null,this,dataUltimaConsulta);
+				getApplicationContext(), this);
 		dataUltimaConsulta = Calendar.getInstance(Locale.ENGLISH);
 		threadToken.execute();
-		threadCanaisConta.execute();
+	}
 
+	public void executaSubscriptionsBasic() {
+		Intent intent = new Intent(this, SolicitaCanaisUsuario.class);
+		intent.putExtra("token", token);
+		intent.putExtra("service", true);
+		startService(intent);
 	}
 
 	@Override
@@ -99,6 +110,7 @@ public class MainService extends Service implements
 			mGoogleApiClient.disconnect();
 			mGoogleApiClient.connect();
 		}
+		unregisterReceiver(receiver);
 		super.onDestroy();
 	}
 
@@ -107,11 +119,15 @@ public class MainService extends Service implements
 		PendingIntent pIntent = PendingIntent.getActivity(this, 0,
 				resultIntent, 0);
 		NotificationCompat.Builder notificacao = new NotificationCompat.Builder(
-				this).setSmallIcon(R.drawable.ic_launcher)
+				this)
+				.setSmallIcon(R.drawable.ic_launcher)
 				.setContentText(msg)
 				.setContentTitle("EveryFeeds")
 				.setTicker("Têm vídeo novo!")
-				.setDefaults(Notification.DEFAULT_LIGHTS| Notification.DEFAULT_VIBRATE| Notification.DEFAULT_SOUND)
+				.setDefaults(
+						Notification.DEFAULT_LIGHTS
+								| Notification.DEFAULT_VIBRATE
+								| Notification.DEFAULT_SOUND)
 				.setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
 				.setAutoCancel(true);
 		notificacao.setContentIntent(pIntent);
@@ -120,12 +136,12 @@ public class MainService extends Service implements
 	}
 
 	public void verificaFeeds(List<Canal> feedsAtuais) {
-		if(!isForeground("br.com.everyfeeds")){
+		if (!isForeground("br.com.everyfeeds")) {
 			if (feedsAtuais.size() != 0) {
-				if(feedsAtuais.size() == 1){
+				if (feedsAtuais.size() == 1) {
 					exibeNotificacao("Existe " + feedsAtuais.size()
 							+ " vídeo novo em seus feeds!");
-				}else{
+				} else {
 					exibeNotificacao("Existem " + feedsAtuais.size()
 							+ " vídeos novos em seus feeds!");
 				}
@@ -133,16 +149,17 @@ public class MainService extends Service implements
 		}
 	}
 
-	
-	public boolean isForeground(String myPackage){
+	public boolean isForeground(String myPackage) {
 		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-		 List< ActivityManager.RunningTaskInfo > runningTaskInfo = manager.getRunningTasks(1); 
+		List<ActivityManager.RunningTaskInfo> runningTaskInfo = manager
+				.getRunningTasks(1);
 
-		     ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
-		   if(componentInfo.getPackageName().equals(myPackage)) return true;
+		ComponentName componentInfo = runningTaskInfo.get(0).topActivity;
+		if (componentInfo.getPackageName().equals(myPackage))
+			return true;
 		return false;
-		}
-	
+	}
+
 	@Override
 	public void onConnectionFailed(ConnectionResult result) {
 		mGoogleApiClient.connect();

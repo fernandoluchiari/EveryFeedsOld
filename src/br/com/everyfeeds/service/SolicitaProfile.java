@@ -54,8 +54,6 @@ public class SolicitaProfile extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void result) {
     	super.onPostExecute(result);
     	 principalActivity.AtualizaDadosLogin("Olá "+dadosUsuario.getNome(), dadosUsuario.getEmail(), dadosUsuario.getImagemProfile());
-    	 principalActivity.showBarraAguarde(true);
-    	 principalActivity.iniciaSolicitacoes();
     }
     
     /**
