@@ -2,29 +2,24 @@ package br.com.everyfeeds.service;
 
 import java.io.InputStream;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
+import android.util.Log;
+import android.view.Gravity;
+import android.widget.ImageView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 import br.com.everyfeeds.Principal;
 import br.com.everyfeeds.R;
 import br.com.everyfeeds.R.string;
 import br.com.everyfeeds.entity.Canal;
 import br.com.everyfeeds.entity.Usuario;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ImageView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 
 public class GeraComponentes extends AsyncTask<Void, Void, Void> {
 	private Principal principalActivity;
 	private Usuario dadosUsuario;
-	private long inicio = 0;
 	private String ERRO_EVERYFEEDS = "Erro EveryFeeds";
 	
 	public GeraComponentes(Principal principalActivity, Usuario dadosUsuario) {
